@@ -1,22 +1,23 @@
 ;
 ;%include "macro.c"
 global _main
-extern _printf,_gets,_puts,_putc,_scanf
+extern _printf,_gets,_puts,_getc,_scanf
 section .data
 msg db "Input Polymer:",0xa,0
 input times 32 db  0
-fmtPoly times 34 db  "%s .",0
-scanInt db "%d",0
+fmtPoly times 34 db  "%s.",0
 intNum dd 0
-lf db 0xa,0
+lf db 13,10,0
 len db 0
 inv times 31 db 0
 badString db "Invalid input",0
-proInv db "Inverse String",0
+proInv db "Inverse String: %s",13,10,0
 pPal db "Reverse Palindrome:",0
-noMsg db "no",10,0
-yesMsg db "yes",10,0
+noMsg db "no",13,10,0
+yesMsg db "yes",13,10,0
 cntMsg db "Continue [y/n]?",0
+ans db 0
+
 section .text
 _main:
     mov ebp, esp; for correct debugging
@@ -88,10 +89,19 @@ nxt:
     cmp ecx,esi
     jg L2
     ;mov esi,ecx
+    
     mov ecx,0
     mov dl,[len]
     lea edi, [inv]
     lea esi, [input]
+    
+    push edi
+    push proInv
+    call _printf
+    add esp,8
+    push pPal
+    call _puts
+    add esp,4
 pal_check:
     mov al, [esi+ecx]
     mov bl, [edi+ecx]
@@ -99,7 +109,7 @@ pal_check:
     jne no_pal    
     inc cl
     cmp cl, dl
-    jg pal_check
+    jl pal_check
     push yesMsg
     call _puts
     add esp,4
@@ -127,14 +137,18 @@ prompt:
     push lf
     call _puts
     add esp,4
-    push cntMSg
+    push cntMsg
     call _puts
     add esp,4
-    GET_STRING string,3
-    mov al,[string]
-
+    ;GET_STRING string,3
+    
+    push ans
+    call _getc
+    add esp,4
+    
+    mov al,[ans]
     cmp al, 'y'
-    je main
+    je _main
     cmp al, 'n'
     je stop
     jmp err
